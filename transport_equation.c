@@ -3,22 +3,47 @@
 #define sigma_Re 2.0
 #define c_Re 0.03
 #define c_e2 50
-#define Me 6      /*freesream Mach number*/
-#define T_W 300   /*iosthermal wall temperature*/
-#define T_e 50.62 /*freesream temperature*/
+#define Me 6.3  /*freesream Mach number*/
+#define T_W 300 /*iosthermal wall temperature*/
+#define T_e 570 /*freesream temperature*/
 
 DEFINE_UDS_FLUX(my_uds_flux, f, t, i)
 {
-    real NV_VEC(psi), NV_VEC(A);                   /*declaring vectors psi and A */
-    NV_D(psi, =, F_U(f, t), F_V(f, t), F_W(f, t)); /*defining psi in terms of velocity field*/
-    NV_S(psi, *=, F_R(f, t));                      /*multiplying density to get psi vector */
-    F_AREA(A, f, t);                               /*face normal vector returned from F_AREA*/
-    return NV_DOT(psi, A);                         /*dot product of the two returned*/
+    cell_t c0, c1 = -1;
+    Thread *t0, *t1 = NULL;
+    real NV_VEC(psi), NV_VEC(A), flux = 0.0;
+    c0 = F_C0(f, t);
+    t0 = F_C0_THREAD(f, t);
+    /* defining psi in terms of velocity field */
+    //NV_D(psi, =, F_U(f, t), F_V(f, t), F_W(f, t));
+    //NV_S(psi, *=, F_R(f, t)); /* multiplying density to get psi vector */
+    F_AREA(A, f, t); /* face normal vector returned from F_AREA */
+                     //NV_DS(psi, =, F_U(f, t), F_V(f, t), F_W(f, t), *, C_R(c0, t0));
+                     //return NV_DOT(psi, A); /* dot product of the two returned */
+                     //if (BOUNDARY_FACE_THREAD_P(t))
+                     //{
+                     //real rho;
+                     //if (NULLP(THREAD_STORAGE(t, SV_DENSITY)))
+                     //    rho = F_R(f, t);
+                     //else
+                     //rho = C_R(c0, t0);
+                     //NV_DS(psi, =, C_U(c0, t0), C_V(c0, t0), C_W(c0, t0), *, rho);
+                     //flux = NV_DOT(psi, A);
+                     //}
+                     //else
+                     //{
+    c1 = F_C1(f, t);
+    t1 = F_C1_THREAD(f, t);
+    NV_DS(psi, =, C_U(c0, t0), C_V(c0, t0), C_W(c0, t0), *, C_R(c0, t0));
+    //NV_DS(psi, =, C_U(c1, t1), C_V(c1, t1), C_W(c1, t1), *, C_R(c1, t1));
+    flux = NV_DOT(psi, A);
+    //}
+    return flux;
 }
 
 DEFINE_UDS_UNSTEADY(my_uds_unsteady, c, t, i, apu, su)
 {
-    real physical_dt, vol, rho, pho_old;
+    real physical_dt, vol, rho, phi_old;
     physical_dt = RP_Get_Real("physical-time-step");
     vol = C_VOLUME(c, t);
     rho = C_R_M1(c, t);
@@ -36,7 +61,7 @@ DEFINE_DIFFUSIVITY(my_diffusivity, c, t, i)
     return sigma_Re * (miu + miu_t);
 }
 
-DEFINE_SOURCE(my_source, c, t, dS, i)
+DEFINE_SOURCE(my_source, c, t, dS, equ)
 {
     real x[ND_ND]; /* this will hold the position vector */
     C_CENTROID(x, c, t);
@@ -83,8 +108,9 @@ DEFINE_SOURCE(my_source, c, t, dS, i)
     /*****calculate time_scale---t*****/
     time_scale = 500 * miu / (rho * U * U);
 
-    /*****calculate f_ReL *****/
+    /*****calculate f_ReL and f_Re*****/
     f_ReL = T_R * miu_R / (T * miu);
+    // f_Re = T_R * miu_R / (T_e * miu_e);
 
     /*****calculate Re_omega*****/
     Re_omega = rho * omega * y * y / miu;
@@ -102,25 +128,23 @@ DEFINE_SOURCE(my_source, c, t, dS, i)
                 temp[i][j] += vorticity[i][k] * vorticity[k][j];
         }
     }
-
     sum1 = temp[0][2] * temp[1][0] * temp[2][1] + temp[0][1] * temp[1][2] * temp[2][0] + temp[0][0] * temp[1][1] * temp[2][2];
 
     sum2 = temp[2][2] * temp[0][1] * temp[1][0] + temp[2][1] * temp[1][2] * temp[0][0] + temp[0][2] * temp[1][1] * temp[2][0];
 
     sum = sum1 - sum2;
 
-    abs_vorticity = sqrt(2.0 * sum);
+    abs_vorticity = sqrt(2 * sum);
 
     /*****calculate absolute value of vorticity*****/
     theta_BL = f_Re * 7.5 * Re_thetat * miu / rho / U;
 
-    delta_comp = 50.0 * abs_vorticity * y * theta_BL / U;
+    delta_comp = 50 * abs_vorticity * y * theta_BL / U;
 
     /*****calculate F_thetat*****/
-    F_thetat = min(max(F_wake * exp(-pow(y / delta_comp, 4)), 1.0 - pow((intermittency - 1 / c_e2) / (1.0 - 1 / c_e2), 2)), 1.0);
+    F_thetat = min(max(F_wake * exp(-pow(y / delta_comp, 4)), 1.0 - pow((intermittency - 1 / c_e2) / (1 - 1 / c_e2), 2)), 1.0);
 
     /*****calculate source*****/
-    source = c_Re * pho / time_scale * (f_ReL - f_Re) * (1.0 - F_thetat);
-
+    source = c_Re * rho / time_scale * (f_ReL - f_Re) * (1.0 - F_thetat);
     dS[equ] = 0.0;
 }

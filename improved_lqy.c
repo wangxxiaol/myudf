@@ -13,13 +13,14 @@ DEFINE_TRANS_RETHETA_C(user_Re_thetac, c, t)
         Re_thetac = (Re_thetat_new - (593.11 + (Re_thetat_new - 1870.0) * 0.482));
     else
         Re_thetac = (Re_thetat_new - ((396.035e-2) - (120.656e-4) * Re_thetat_new + (868.230e-6) * pow(Re_thetat_new, 2) - (696.506e-9) * pow(Re_thetat_new, 3) + (174.105e-12) * pow(Re_thetat_new, 4)));
-    return Re_thetac * f_Re;
+    return f_Re * Re_thetac;
 }
 
 DEFINE_TRANS_FLENGTH(user_Flength, c, t)
 {
     real Flength;
     real f_Re = C_UDSI(c, t, 0);
+    //Message("f_Re is: %f\n", f_Re);
     real Re_thetat_new = C_RETHETA(c, t) / f_Re;
     if (Re_thetat_new < 400)
         Flength = 398.189e-1 - (119.270e-4) * (Re_thetat_new) - (132.567e-6) * pow(Re_thetat_new, 2);
@@ -77,27 +78,27 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
     lambda_theta = 0.0;
     temp = 0.0;
 
-    // for (int i = 0; i < 10; i++)
-    //{
-    lambda_theta = temp;
+    for (int i = 0; i < 10; i++)
+    {
+        lambda_theta = temp;
 
-    if (Tu > 1.3)
-        F_Tu = 331.5 * pow(Tu - 0.5658, -0.671);
-    else
-        F_Tu = 1173.51 - 589.428 * Tu + 0.2196 / (Tu * Tu);
+        if (Tu > 1.3)
+            F_Tu = 331.5 * pow(Tu - 0.5658, -0.671);
+        else
+            F_Tu = 1173.51 - 589.428 * Tu + 0.2196 / (Tu * Tu);
 
-    if (lambda_theta > 0)
-        F_lambda = 1.0 + 0.275 * (1.0 - exp(-35.0 * lambda_theta)) * exp(-Tu / 0.5);
-    else
-        F_lambda = 1.0 - (-12.986 * lambda_theta - 123.66 * pow(lambda_theta, 2) - 405.689 * pow(lambda_theta, 3)) * exp(-pow(Tu / 1.5, 1.5));
+        if (lambda_theta > 0)
+            F_lambda = 1.0 + 0.275 * (1.0 - exp(-35.0 * lambda_theta)) * exp(-Tu / 0.5);
+        else
+            F_lambda = 1.0 - (-12.986 * lambda_theta - 123.66 * pow(lambda_theta, 2) - 405.689 * pow(lambda_theta, 3)) * exp(-pow(Tu / 1.5, 1.5));
 
-    Re_thetat = max(F_Tu * F_lambda, 20.0);
+        Re_thetat = max(F_Tu * F_lambda, 20.0);
 
-    //    temp = min(max(Re_thetat * Re_thetat * K, -0.1), 0.1);
-    // Message("Tu is: %f\n", Tu);
-    // Message("K is: %.16f\n", K);
-    // Message("lamda_theta1 is: %.16f\n", lamda_theta1);
-    //}
+        //    temp = min(max(Re_thetat * Re_thetat * K, -0.1), 0.1);
+        //Message("Tu is: %f\n", Tu);
+        //Message("K is: %.16f\n", K);
+        //Message("lamda_theta1 is: %.16f\n", lamda_theta1);
+    }
 
     c0 = -0.00141089 * pow(Me, 3) - 0.00467533 * pow(Me, 2) - 0.0270837 * Me + 0.00576259;
 
@@ -105,11 +106,11 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
 
     c2 = -0.00884236 * pow(Me, 3) + 0.0864964 * pow(Me, 2) - 0.323869 * Me - 0.404892;
 
-    T_aw = T * (1 + 0.85 * ((gamma - 1) / 2) * Me * Me); // use local temperature and Mach number
+    T_aw = T * (1 + 0.85 * ((gamma - 1) / 2) * Me * Me); //use local temperature and Mach number
 
     T_R = 0.5 * T + 0.22 * T_aw + 0.28 * T;
 
-    c_fc = log10(c2 * pow(log10(T_R / T), 2) + c1 * log10(T_R / T) + c0);
+    c_fc = pow(10, (c2 * pow(log10(T_R / T), 2) + c1 * log10(T_R / T) + c0));
 
     return Re_thetat * c_fc;
 }
