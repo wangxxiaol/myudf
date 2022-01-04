@@ -45,7 +45,7 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
     real U = sqrt(C_VMAG2(c, t));
     real Me;
     real F_lambda, lambda_theta, temp;
-    real K, miu;
+    real K, niu;
     real DUDx, DUDy, DUDz, DUDs;
     real dudx = C_DUDX(c, t);
     real dudy = C_DUDY(c, t);
@@ -69,9 +69,9 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
 
     DUDs = (u / U) * DUDx + (v / U) * DUDy / +(w / U) * DUDz;
 
-    miu = pow(T / 288.15, 1.5) * (288.15 + 110.4) / (T + 110.4) * (1.7894e-5) / rho;
+    niu = pow(T / 288.15, 1.5) * (288.15 + 110.4) / (T + 110.4) * (1.7894e-5) / rho;
 
-    K = miu / (U * U) * DUDs;
+    K = niu / (U * U) * DUDs;
 
     Tu = max(100.0 * sqrt(2.0 * T_Ke / 3.0) / U, 0.027);
 
