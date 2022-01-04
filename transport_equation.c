@@ -4,7 +4,7 @@
 #define c_Re 0.03    // constant number
 #define c_e2 50      // constant number
 #define Me 6.3       // freesream Mach number
-#define T_W 300      // iosthermal wall temperature
+#define T_w 300      // iosthermal wall temperature
 #define T_e 570      // freesream temperature
 
 DEFINE_UDS_FLUX(my_uds_flux, f, t, i)
@@ -68,7 +68,7 @@ DEFINE_SOURCE(my_source, c, t, dS, equ)
     real y = x[1];
     real rho = C_R(c, t);
     real T = C_T(c, t);
-    real T_R, T_aW;               // reference temperature, Adiabatic wall temperature
+    real T_R, T_aw;               // reference temperature, Adiabatic wall temperature
     real U = sqrt(C_VMAG2(c, t)); // velocity
     real time_scale;
     real miu, miu_R; // viscosity, reference viscosity
@@ -91,8 +91,8 @@ DEFINE_SOURCE(my_source, c, t, dS, equ)
     real theta_BL;
 
     /*****calculate reference temperature*****/
-    T_aW = T * (1 + 0.85 * ((gamma - 1) / 2) * Me * Me);
-    T_R = 0.05 * T_W + 0.22 * T_aW + 0.28 * T;
+    T_aw = T_e * (1 + 0.85 * ((gamma - 1) / 2) * Me * Me); // use freesream temperature
+    T_R = 0.05 * T_w + 0.22 * T_aw + 0.28 * T_e;           // use freesream temperature
 
     /*****calculate viscosity, reference viscosity*****/
     miu = pow(T / 288.15, 1.5) * (288.15 + 110.4) / (T + 110.4) * (1.7894e-5);

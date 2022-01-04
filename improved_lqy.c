@@ -10,9 +10,9 @@ DEFINE_TRANS_RETHETA_C(user_Re_thetac, c, t)
     real f_Re = C_UDSI(c, t, 0);
     real Re_thetat_new = C_RETHETA(c, t) / f_Re;
     if (Re_thetat_new > 1870)
-        Re_thetac = (Re_thetat_new - (593.11 + (Re_thetat_new - 1870.0) * 0.482));
+        Re_thetac = Re_thetat_new - (593.11 + (Re_thetat_new - 1870.0) * 0.482);
     else
-        Re_thetac = (Re_thetat_new - ((396.035e-2) - (120.656e-4) * Re_thetat_new + (868.230e-6) * pow(Re_thetat_new, 2) - (696.506e-9) * pow(Re_thetat_new, 3) + (174.105e-12) * pow(Re_thetat_new, 4)));
+        Re_thetac = Re_thetat_new - ((396.035e-2) - (120.656e-4) * Re_thetat_new + (868.230e-6) * pow(Re_thetat_new, 2) - (696.506e-9) * pow(Re_thetat_new, 3) + (174.105e-12) * pow(Re_thetat_new, 4));
     return f_Re * Re_thetac;
 }
 
@@ -23,7 +23,7 @@ DEFINE_TRANS_FLENGTH(user_Flength, c, t)
     // Message("f_Re is: %f\n", f_Re);
     real Re_thetat_new = C_RETHETA(c, t) / f_Re;
     if (Re_thetat_new < 400)
-        Flength = 398.189e-1 - (119.270e-4) * (Re_thetat_new) - (132.567e-6) * pow(Re_thetat_new, 2);
+        Flength = (398.189e-1) - (119.270e-4) * (Re_thetat_new) - (132.567e-6) * pow(Re_thetat_new, 2);
     else if (Re_thetat_new < 596)
         Flength = 263.404 - (123.939e-2) * (Re_thetat_new) + (194.548e-5) * pow(Re_thetat_new, 2) - (101.695e-8) * pow(Re_thetat_new, 3);
     else if (Re_thetat_new < 1200)
@@ -37,13 +37,13 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
 {
     real Re_thetat;
     real F_Tu, Tu;
-    real T = C_T(c, t);
-    real T_R, T_aw;
-    real gamma = C_GAMMA(c, t); // specific heat ration
-    real rho = C_R(c, t);       // density
-    real T_Ke = C_K(c, t);      // turb. kinetic energy
-    real U = sqrt(C_VMAG2(c, t));
-    real Me; // Mach number
+    real T = C_T(c, t);           // local temperature
+    real T_R, T_aw;               // reference temperature, Adiabatic wall temperature
+    real gamma = C_GAMMA(c, t);   // specific heat ration
+    real rho = C_R(c, t);         // density
+    real T_Ke = C_K(c, t);        // turb. kinetic energy
+    real U = sqrt(C_VMAG2(c, t)); // velocity
+    real Me;                      // local Mach number
     real F_lambda, lambda_theta = 0.0, temp = 0.0;
     real K, niu;
     real DUDx, DUDy, DUDz, DUDs;
@@ -52,8 +52,6 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
     real dwdx = C_DWDX(c, t), dwdy = C_DWDY(c, t), dwdz = C_DWDZ(c, t);
     real u = C_U(c, t), v = C_V(c, t), w = C_W(c, t);
     real c0, c1, c2, c_fc;
-
-    Me = min(max(U / sqrt(gamma * 287 * T), 0.4), 8);
 
     DUDx = 0.5 * pow(U * U, -0.5) * (2.0 * u * dudx + 2.0 * v * dvdx + 2.0 * w * dwdx);
     DUDy = 0.5 * pow(U * U, -0.5) * (2.0 * u * dudy + 2.0 * v * dvdy + 2.0 * w * dwdy);
@@ -85,6 +83,8 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
 
         temp = min(max(Re_thetat * Re_thetat * K, -0.1), 0.1);
     }
+    /*****calculate local Mach number*****/
+    Me = max(0.4, U / sqrt(gamma * 287 * T));
 
     c0 = -0.00141089 * pow(Me, 3) - 0.00467533 * pow(Me, 2) - 0.0270837 * Me + 0.00576259;
 
@@ -92,10 +92,13 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
 
     c2 = -0.00884236 * pow(Me, 3) + 0.0864964 * pow(Me, 2) - 0.323869 * Me - 0.404892;
 
+    /*****calculate Adiabatic wall temperature*****/
     T_aw = T * (1 + 0.85 * ((gamma - 1) / 2) * Me * Me); // use local temperature and Mach number
 
-    T_R = 0.5 * T + 0.22 * T_aw + 0.28 * T;
+    /*****calculate reference temperature*****/
+    T_R = 0.5 * T_w + 0.22 * T_aw + 0.28 * T; // use local temperature
 
+    /*****correction function*****/
     c_fc = pow(10, (c2 * pow(log10(T_R / T), 2) + c1 * log10(T_R / T) + c0));
 
     return Re_thetat * c_fc;
