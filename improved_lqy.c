@@ -39,26 +39,18 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
     real F_Tu, Tu;
     real T = C_T(c, t);
     real T_R, T_aw;
-    real gamma = C_GAMMA(c, t); /*specific heat ration*/
-    real rho = C_R(c, t);       /*density*/
-    real T_Ke = C_K(c, t);
+    real gamma = C_GAMMA(c, t); // specific heat ration
+    real rho = C_R(c, t);       // density
+    real T_Ke = C_K(c, t);      // turb. kinetic energy
     real U = sqrt(C_VMAG2(c, t));
-    real Me;
-    real F_lambda, lambda_theta, temp;
+    real Me; // Mach number
+    real F_lambda, lambda_theta = 0.0, temp = 0.0;
     real K, niu;
     real DUDx, DUDy, DUDz, DUDs;
-    real dudx = C_DUDX(c, t);
-    real dudy = C_DUDY(c, t);
-    real dudz = C_DUDZ(c, t);
-    real dvdx = C_DVDX(c, t);
-    real dvdy = C_DVDY(c, t);
-    real dvdz = C_DVDZ(c, t);
-    real dwdx = C_DWDX(c, t);
-    real dwdy = C_DWDY(c, t);
-    real dwdz = C_DWDZ(c, t);
-    real u = C_U(c, t);
-    real v = C_V(c, t);
-    real w = C_W(c, t);
+    real dudx = C_DUDX(c, t), dudy = C_DUDY(c, t), dudz = C_DUDZ(c, t);
+    real dvdx = C_DVDX(c, t), dvdy = C_DVDY(c, t), dvdz = C_DVDZ(c, t);
+    real dwdx = C_DWDX(c, t), dwdy = C_DWDY(c, t), dwdz = C_DWDZ(c, t);
+    real u = C_U(c, t), v = C_V(c, t), w = C_W(c, t);
     real c0, c1, c2, c_fc;
 
     Me = min(max(U / sqrt(gamma * 287 * T), 0.4), 8);
@@ -74,9 +66,6 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
     K = niu / (U * U) * DUDs;
 
     Tu = max(100.0 * sqrt(2.0 * T_Ke / 3.0) / U, 0.027);
-
-    lambda_theta = 0.0;
-    temp = 0.0;
 
     for (int i = 0; i < 10; i++)
     {
@@ -95,9 +84,6 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
         Re_thetat = max(F_Tu * F_lambda, 20.0);
 
         temp = min(max(Re_thetat * Re_thetat * K, -0.1), 0.1);
-        // Message("Tu is: %f\n", Tu);
-        // Message("K is: %.16f\n", K);
-        // Message("lamda_theta1 is: %.16f\n", lamda_theta1);
     }
 
     c0 = -0.00141089 * pow(Me, 3) - 0.00467533 * pow(Me, 2) - 0.0270837 * Me + 0.00576259;
