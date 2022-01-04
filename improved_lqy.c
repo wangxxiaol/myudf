@@ -2,7 +2,7 @@
 #include "mem.h"
 #include <math.h>
 
-#define T_w 300
+#define T_w 300 // iosthermal wall temperature
 
 DEFINE_TRANS_RETHETA_C(user_Re_thetac, c, t)
 {
@@ -65,6 +65,7 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
 
     Tu = max(100.0 * sqrt(2.0 * T_Ke / 3.0) / U, 0.027);
 
+    /*****calculate Re_thetat*****/
     for (int i = 0; i < 10; i++)
     {
         lambda_theta = temp;
@@ -84,13 +85,13 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
         temp = min(max(Re_thetat * Re_thetat * K, -0.1), 0.1);
     }
     /*****calculate local Mach number*****/
-    Me = max(0.4, U / sqrt(gamma * 287 * T));
+    Me = max(0.4, U / sqrt(gamma * 287 * T)); // use local temperature
 
-    c0 = -0.00141089 * pow(Me, 3) - 0.00467533 * pow(Me, 2) - 0.0270837 * Me + 0.00576259;
+    c0 = -0.00141089 * pow(Me, 3) - 0.00467533 * pow(Me, 2) - 0.0270837 * Me + 0.00576259; // use local temperature
 
-    c1 = 0.00298137 * pow(Me, 3) + 0.0103366 * pow(Me, 2) + 0.0453367 * Me + 1.02002;
+    c1 = 0.00298137 * pow(Me, 3) + 0.0103366 * pow(Me, 2) + 0.0453367 * Me + 1.02002; // use local temperature
 
-    c2 = -0.00884236 * pow(Me, 3) + 0.0864964 * pow(Me, 2) - 0.323869 * Me - 0.404892;
+    c2 = -0.00884236 * pow(Me, 3) + 0.0864964 * pow(Me, 2) - 0.323869 * Me - 0.404892; // use local temperature
 
     /*****calculate Adiabatic wall temperature*****/
     T_aw = T * (1 + 0.85 * ((gamma - 1) / 2) * Me * Me); // use local temperature and Mach number
@@ -99,7 +100,7 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
     T_R = 0.5 * T_w + 0.22 * T_aw + 0.28 * T; // use local temperature
 
     /*****correction function*****/
-    c_fc = pow(10, (c2 * pow(log10(T_R / T), 2) + c1 * log10(T_R / T) + c0));
+    c_fc = pow(10, (c2 * pow(log10(T_R / T), 2) + c1 * log10(T_R / T) + c0)); // use local temperature
 
     return Re_thetat * c_fc;
 }
