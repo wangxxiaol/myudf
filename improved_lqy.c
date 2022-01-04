@@ -20,7 +20,7 @@ DEFINE_TRANS_FLENGTH(user_Flength, c, t)
 {
     real Flength;
     real f_Re = C_UDSI(c, t, 0);
-    //Message("f_Re is: %f\n", f_Re);
+    // Message("f_Re is: %f\n", f_Re);
     real Re_thetat_new = C_RETHETA(c, t) / f_Re;
     if (Re_thetat_new < 400)
         Flength = 398.189e-1 - (119.270e-4) * (Re_thetat_new) - (132.567e-6) * pow(Re_thetat_new, 2);
@@ -94,10 +94,10 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
 
         Re_thetat = max(F_Tu * F_lambda, 20.0);
 
-        //    temp = min(max(Re_thetat * Re_thetat * K, -0.1), 0.1);
-        //Message("Tu is: %f\n", Tu);
-        //Message("K is: %.16f\n", K);
-        //Message("lamda_theta1 is: %.16f\n", lamda_theta1);
+        temp = min(max(Re_thetat * Re_thetat * K, -0.1), 0.1);
+        // Message("Tu is: %f\n", Tu);
+        // Message("K is: %.16f\n", K);
+        // Message("lamda_theta1 is: %.16f\n", lamda_theta1);
     }
 
     c0 = -0.00141089 * pow(Me, 3) - 0.00467533 * pow(Me, 2) - 0.0270837 * Me + 0.00576259;
@@ -106,7 +106,7 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
 
     c2 = -0.00884236 * pow(Me, 3) + 0.0864964 * pow(Me, 2) - 0.323869 * Me - 0.404892;
 
-    T_aw = T * (1 + 0.85 * ((gamma - 1) / 2) * Me * Me); //use local temperature and Mach number
+    T_aw = T * (1 + 0.85 * ((gamma - 1) / 2) * Me * Me); // use local temperature and Mach number
 
     T_R = 0.5 * T + 0.22 * T_aw + 0.28 * T;
 
