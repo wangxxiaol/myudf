@@ -82,7 +82,7 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
 
         Re_thetat = max(F_Tu * F_lambda, 20.0);
 
-        temp = min(max(Re_thetat * Re_thetat * K, -0.1), 0.1);
+        temp = min(max(-0.1, Re_thetat * Re_thetat * K), 0.1);
     }
     /*****calculate local Mach number*****/
     Me = max(0.4, U / sqrt(gamma * 287 * T)); // use local temperature

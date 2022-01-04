@@ -94,15 +94,15 @@ DEFINE_SOURCE(my_source, c, t, dS, equ)
     T_aw = T_e * (1 + 0.85 * ((gamma - 1) / 2) * Me * Me); // use freesream temperature
     T_R = 0.05 * T_w + 0.22 * T_aw + 0.28 * T_e;           // use freesream temperature
 
-    /*****calculate viscosity, reference viscosity*****/
-    miu = pow(T / 288.15, 1.5) * (288.15 + 110.4) / (T + 110.4) * (1.7894e-5);
-    miu_R = pow(T_R / 288.15, 1.5) * (288.15 + 110.4) / (T_R + 110.4) * (1.7894e-5);
+    /*****calculate local viscosity, reference viscosity*****/
+    miu = pow(T / 288.15, 1.5) * (288.15 + 110.4) / (T + 110.4) * (1.7894e-5);       // use local temperature
+    miu_R = pow(T_R / 288.15, 1.5) * (288.15 + 110.4) / (T_R + 110.4) * (1.7894e-5); // use reference temperature
 
     /*****calculate time_scale---t*****/
     time_scale = 500 * miu / (rho * U * U);
 
-    /*****calculate f_ReL and f_Re*****/
-    f_ReL = T_R * miu_R / (T * miu);
+    /*****calculate f_ReL*****/
+    f_ReL = T_R * miu_R / (T * miu); // use local temperature and viscosity
 
     /*****calculate Re_omega*****/
     Re_omega = rho * omega * y * y / miu;
@@ -131,7 +131,7 @@ DEFINE_SOURCE(my_source, c, t, dS, equ)
     /*****calculate absolute value of vorticity*****/
     theta_BL = f_Re * 7.5 * Re_thetat * miu / rho / U;
 
-    delta_comp = 50 * abs_vorticity * y * theta_BL / U;
+    delta_comp = 50.0 * abs_vorticity * y * theta_BL / U;
 
     /*****calculate F_thetat*****/
     F_thetat = min(max(F_wake * exp(-pow(y / delta_comp, 4)), 1.0 - pow((intermittency - 1 / c_e2) / (1 - 1 / c_e2), 2)), 1.0);
