@@ -1,11 +1,11 @@
 #include "udf.h"
 
-#define sigma_Re 2.0
-#define c_Re 0.03
-#define c_e2 50
-#define Me 6.3  /*freesream Mach number*/
-#define T_W 300 /*iosthermal wall temperature*/
-#define T_e 570 /*freesream temperature*/
+#define sigma_Re 2.0 /*constant number*/
+#define c_Re 0.03    /*constant number*/
+#define c_e2 50      /*constant number*/
+#define Me 6.3       /*freesream Mach number*/
+#define T_W 300      /*iosthermal wall temperature*/
+#define T_e 570      /*freesream temperature*/
 
 DEFINE_UDS_FLUX(my_uds_flux, f, t, i)
 {
@@ -15,27 +15,27 @@ DEFINE_UDS_FLUX(my_uds_flux, f, t, i)
     c0 = F_C0(f, t);
     t0 = F_C0_THREAD(f, t);
     /* defining psi in terms of velocity field */
-    //NV_D(psi, =, F_U(f, t), F_V(f, t), F_W(f, t));
-    //NV_S(psi, *=, F_R(f, t)); /* multiplying density to get psi vector */
+    // NV_D(psi, =, F_U(f, t), F_V(f, t), F_W(f, t));
+    // NV_S(psi, *=, F_R(f, t)); /* multiplying density to get psi vector */
     F_AREA(A, f, t); /* face normal vector returned from F_AREA */
-                     //NV_DS(psi, =, F_U(f, t), F_V(f, t), F_W(f, t), *, C_R(c0, t0));
-                     //return NV_DOT(psi, A); /* dot product of the two returned */
-                     //if (BOUNDARY_FACE_THREAD_P(t))
-                     //{
-                     //real rho;
-                     //if (NULLP(THREAD_STORAGE(t, SV_DENSITY)))
-                     //    rho = F_R(f, t);
-                     //else
-                     //rho = C_R(c0, t0);
-                     //NV_DS(psi, =, C_U(c0, t0), C_V(c0, t0), C_W(c0, t0), *, rho);
-                     //flux = NV_DOT(psi, A);
-                     //}
-                     //else
-                     //{
+                     // NV_DS(psi, =, F_U(f, t), F_V(f, t), F_W(f, t), *, C_R(c0, t0));
+    // return NV_DOT(psi, A); /* dot product of the two returned */
+    // if (BOUNDARY_FACE_THREAD_P(t))
+    //{
+    // real rho;
+    // if (NULLP(THREAD_STORAGE(t, SV_DENSITY)))
+    //     rho = F_R(f, t);
+    // else
+    // rho = C_R(c0, t0);
+    // NV_DS(psi, =, C_U(c0, t0), C_V(c0, t0), C_W(c0, t0), *, rho);
+    // flux = NV_DOT(psi, A);
+    // }
+    // else
+    //{
     c1 = F_C1(f, t);
     t1 = F_C1_THREAD(f, t);
     NV_DS(psi, =, C_U(c0, t0), C_V(c0, t0), C_W(c0, t0), *, C_R(c0, t0));
-    //NV_DS(psi, =, C_U(c1, t1), C_V(c1, t1), C_W(c1, t1), *, C_R(c1, t1));
+    // NV_DS(psi, =, C_U(c1, t1), C_V(c1, t1), C_W(c1, t1), *, C_R(c1, t1));
     flux = NV_DOT(psi, A);
     //}
     return flux;
@@ -69,13 +69,14 @@ DEFINE_SOURCE(my_source, c, t, dS, equ)
     real y = x[1];
     real rho = C_R(c, t);
     real T = C_T(c, t);
-    real T_R, T_aW; /*reference temperature, Adiabatic wall temperature*/
-    real U = sqrt(C_VMAG2(c, t));
+    real T_R, T_aW;               /*reference temperature, Adiabatic wall temperature*/
+    real U = sqrt(C_VMAG2(c, t)); /*velocity*/
     real time_scale;
     real miu, miu_R; /*viscosity, reference viscosity*/
     real f_ReL;
-    real f_Re = C_UDSI(c, t, 0);
-    real gamma = C_GAMMA(c, t); /*specific heat ration*/
+    real f_Re = C_UDSI(c, t, 0);      /*from scalar equation*/
+    real Re_thetat = C_RETHETA(c, t); /*from fluent*/
+    real gamma = C_GAMMA(c, t);       /*specific heat ration*/
     real intermittency = C_INTERMIT(c, t);
     real F_thetat, F_wake;
     real omega = C_O(c, t); /*specific dissipation rate*/
@@ -95,7 +96,6 @@ DEFINE_SOURCE(my_source, c, t, dS, equ)
     real sum1, sum2, sum;
     real abs_vorticity;
     real theta_BL;
-    real Re_thetat = C_RETHETA(c, t);
 
     /*****calculate reference temperature*****/
     T_aW = T * (1 + 0.85 * ((gamma - 1) / 2) * Me * Me);
@@ -110,7 +110,6 @@ DEFINE_SOURCE(my_source, c, t, dS, equ)
 
     /*****calculate f_ReL and f_Re*****/
     f_ReL = T_R * miu_R / (T * miu);
-    // f_Re = T_R * miu_R / (T_e * miu_e);
 
     /*****calculate Re_omega*****/
     Re_omega = rho * omega * y * y / miu;
@@ -146,5 +145,6 @@ DEFINE_SOURCE(my_source, c, t, dS, equ)
 
     /*****calculate source*****/
     source = c_Re * rho / time_scale * (f_ReL - f_Re) * (1.0 - F_thetat);
+
     dS[equ] = 0.0;
 }
