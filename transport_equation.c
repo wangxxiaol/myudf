@@ -31,8 +31,8 @@ DEFINE_UDS_FLUX(my_uds_flux, f, t, i)
     // }
     // else
     //{
-    c1 = F_C1(f, t);
-    t1 = F_C1_THREAD(f, t);
+    // c1 = F_C1(f, t);
+    // t1 = F_C1_THREAD(f, t);
     NV_DS(psi, =, C_U(c0, t0), C_V(c0, t0), C_W(c0, t0), *, C_R(c0, t0));
     // NV_DS(psi, =, C_U(c1, t1), C_V(c1, t1), C_W(c1, t1), *, C_R(c1, t1));
     flux = NV_DOT(psi, A);
