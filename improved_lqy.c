@@ -2,7 +2,8 @@
 #include "mem.h"
 #include <math.h>
 
-#define T_w 300 // iosthermal wall temperature
+#define T_w 300    // iosthermal wall temperature
+#define gamma 1.38 // specific heat ration
 
 DEFINE_TRANS_RETHETA_C(user_Re_thetac, c, t)
 {
@@ -37,12 +38,12 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
 {
     real Re_thetat;
     real F_Tu, Tu;
-    real T = C_T(c, t);           // local temperature
-    real T_R, T_aw;               // reference temperature, Adiabatic wall temperature
-    real gamma = C_GAMMA(c, t);   // specific heat ration
+    real T = C_T(c, t); // local temperature
+    real T_R, T_aw;     // reference temperature, Adiabatic wall temperature
+    // real gamma = C_GAMMA(c, t);   // specific heat ration
     real rho = C_R(c, t);         // density
     real T_Ke = C_K(c, t);        // turb. kinetic energy
-    real U = sqrt(C_VMAG2(c, t)); // velocity
+    real U = sqrt(C_VMAG2(c, t)); // velocity magnitude
     real Me;                      // local Mach number
     real F_lambda, lambda_theta = 0.0, temp = 0.0;
     real K, niu;
@@ -57,7 +58,7 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
     DUDy = 0.5 * pow(U * U, -0.5) * (2.0 * u * dudy + 2.0 * v * dvdy + 2.0 * w * dwdy);
     DUDz = 0.5 * pow(U * U, -0.5) * (2.0 * u * dudz + 2.0 * v * dvdz + 2.0 * w * dwdz);
 
-    DUDs = (u / U) * DUDx + (v / U) * DUDy / +(w / U) * DUDz;
+    DUDs = (u / U) * DUDx + (v / U) * DUDy + (w / U) * DUDz;
 
     niu = pow(T / 288.15, 1.5) * (288.15 + 110.4) / (T + 110.4) * (1.7894e-5) / rho;
 
