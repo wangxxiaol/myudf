@@ -2,8 +2,8 @@
 #include "mem.h"
 #include <math.h>
 
-#define T_w 300    // iosthermal wall temperature
-#define gamma 1.38 // specific heat ration
+#define T_R 1238.806 // reference temperature
+#define gamma 1.38   // specific heat ration
 
 DEFINE_TRANS_RETHETA_C(user_Re_thetac, c, t)
 {
@@ -39,7 +39,7 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
     real Re_thetat;
     real F_Tu, Tu;
     real T = C_T(c, t); // local temperature
-    real T_R, T_aw;     // reference temperature, Adiabatic wall temperature
+    // real T_R, T_aw;     // reference temperature, Adiabatic wall temperature
     // real gamma = C_GAMMA(c, t);   // specific heat ration
     real rho = C_R(c, t);         // density
     real T_Ke = C_K(c, t);        // turb. kinetic energy
@@ -95,10 +95,10 @@ DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
     c2 = -0.00884236 * pow(Me, 3) + 0.0864964 * pow(Me, 2) - 0.323869 * Me - 0.404892; // use local temperature
 
     /*****calculate Adiabatic wall temperature*****/
-    T_aw = T * (1 + 0.85 * ((gamma - 1) / 2) * Me * Me); // use local temperature and Mach number
+    // T_aw = T * (1 + 0.85 * ((gamma - 1) / 2) * Me * Me); // use local temperature and Mach number
 
     /*****calculate reference temperature*****/
-    T_R = 0.5 * T_w + 0.22 * T_aw + 0.28 * T; // use local temperature
+    // T_R = 0.5 * T_w + 0.22 * T_aw + 0.28 * T; // use local temperature
 
     /*****correction function*****/
     c_fc = pow(10, (c2 * pow(log10(T_R / T), 2) + c1 * log10(T_R / T) + c0)); // use local temperature

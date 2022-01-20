@@ -1,6 +1,10 @@
 #include "udf.h"
 #include "mem.h"
 
+#define Me = 6.3;
+#define Tw = 300;
+#define T0 = 4868.427;
+
 DEFINE_TRANS_RETHETA_C(hpyersonic_rethetac, c, t)
 {
     real Re_thetat = C_RETHETA(c, t);
@@ -10,9 +14,6 @@ DEFINE_TRANS_RETHETA_C(hpyersonic_rethetac, c, t)
     real g_Me;
     real R_Me;
     real f_R_Me;
-    real Me = 6.3;
-    real Tw = 300;
-    real T0 = 4868.427;
 
     if (Re_thetat > 1870)
         Re_thetac_baseline = Re_thetat - (593.11 + (Re_thetat - 1870.0) * 0.482);
@@ -39,7 +40,6 @@ DEFINE_TRANS_FLENGTH(hyper_Flength, c, t)
     real R_Me;
     real h_Me;
     real h_R_Me;
-    real Me = 6.3;
     real Re_thetat = C_RETHETA(c, t);
 
     if (Re_thetat < 400)

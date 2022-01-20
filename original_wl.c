@@ -29,36 +29,33 @@ DEFINE_TRANS_FLENGTH(user_Flength, c, t)
 
 DEFINE_TRANS_RETHETA_T(user_Re_thetat, c, t)
 {
-    real Re_thetat;
-    real F_Tu, Tu;
     real T = C_T(c, t);
     real rou = C_R(c, t);
     real T_Ke = C_K(c, t);
     real U = sqrt(C_VMAG2(c, t));
+    real miu = C_MU_L(c, t);
+    real Re_thetat;
+    real F_Tu, Tu;
     real F_lambda, lambda_theta, temp;
-    real K, miu;
+    real K;
     real DUDx, DUDy, DUDz, DUDs;
-    real dudx = C_DUDX(c, t);
-    real dudy = C_DUDY(c, t);
-    //real dudz = C_DUDZ(c, t);
-    real dvdx = C_DVDX(c, t);
-    real dvdy = C_DVDY(c, t);
-    //real dvdz = C_DVDZ(c, t);
-    //real dwdx = C_DWDX(c, t);
-    //real dwdy = C_DWDY(c, t);
-    //real dwdz = C_DWDZ(c, t);
-    real u = C_U(c, t);
-    real v = C_V(c, t);
-    //real w = C_W(c, t);
-    real G_Ma;
-    real Ma = 6.3;
 
-    DUDx = 0.5 * pow(U * U, -0.5) * (2.0 * u * dudx + 2.0 * v * dvdx /*+ 2.0 * w * dwdx*/);
-    DUDy = 0.5 * pow(U * U, -0.5) * (2.0 * u * dudy + 2.0 * v * dvdy /*+ 2.0 * w * dwdy*/);
-    //DUDz = 0.5 * pow(U * U, -0.5) * (2.0 * u * dudz + 2.0 * v * dvdz + 2.0*w * dwdz);
-    DUDs = (u / U) * DUDx + (v / U) * DUDy /*+ (w / U) * DUDz*/;
+#if RP_3D /*3D*/
+    DUDx = 0.5 * pow(U * U, -0.5) * (2.0 * C_U(c, t) * C_DUDX(c, t) + 2.0 * C_V(c, t) * C_DVDX(c, t) + 2.0 * C_W(c, t) * C_DWDX(c, t));
 
-    miu = pow(T / 288.15, 1.5) * (288.15 + 110.4) / (T + 110.4) * (1.7894e-5);
+    DUDy = 0.5 * pow(U * U, -0.5) * (2.0 * C_U(c, t) * C_DUDY(c, t) + 2.0 * C_V(c, t) * C_DVDY(c, t) + 2.0 * C_W(c, t) * C_DWDY(c, t));
+
+    DUDz = 0.5 * pow(U * U, -0.5) * (2.0 * C_U(c, t) * C_DUDZ(c, t) + 2.0 * C_V(c, t) * C_DVDZ(c, t) + 2.0 * C_W(c, t) * C_DWDZ(c, t));
+
+    DUDs = (C_U(c, t) / U) * DUDx + (C_V(c, t) / U) * DUDy + (C_W(c, t) / U) * DUDz;
+#else /*2D*/
+    DUDx = 0.5 * pow(U * U, -0.5) * (2.0 * C_U(c, t) * C_DUDX(c, t) + 2.0 * C_V(c, t) * C_DVDX(c, t));
+
+    DUDy = 0.5 * pow(U * U, -0.5) * (2.0 * C_U(c, t) * C_DUDY(c, t) + 2.0 * C_V(c, t) * C_DVDY(c, t));
+
+    DUDs = (C_U(c, t) / U) * DUDx + (C_V(c, t) / U) * DUDy;
+#endif
+
     K = miu / (U * U) * DUDs;
 
     Tu = max(100.0 * sqrt(2.0 * T_Ke / 3.0) / U, 0.027);
